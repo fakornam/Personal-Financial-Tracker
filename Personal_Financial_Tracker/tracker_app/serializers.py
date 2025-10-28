@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Transaction, Category
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)

@@ -1,10 +1,8 @@
-
 from rest_framework import generics, permissions
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
-from rest_framework.response import Response
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from .models import Transaction, Category
 from .serializers import (
     RegisterSerializer,
@@ -12,21 +10,28 @@ from .serializers import (
     CategorySerializer
 )
 
-# HTML home page
+User = get_user_model()
+
+# Home page
 def home_view(request):
     return render(request, 'home.html')
 
-# Register new user
+# Register
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]
 
-# Login and return token
-class LoginView(ObtainAuthToken):
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        token = Token.objects.get(key=response.data['token'])
-        return Response({'token': token.key})
+# Logout page (browser-friendly)
+@method_decorator(csrf_exempt, name='dispatch')
+class LogoutPageView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        return render(request, 'logout.html')
+
+    def post(self, request):
+        return render(request, 'logout_success.html')
 
 # Transactions
 class TransactionListCreateView(generics.ListCreateAPIView):
@@ -56,4 +61,3 @@ class CategoryListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-# Create your views here.
