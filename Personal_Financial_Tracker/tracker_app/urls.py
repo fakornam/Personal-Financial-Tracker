@@ -6,11 +6,15 @@ from .views import (
     LogoutPageView,
     TransactionListCreateView,
     TransactionDetailView,
-    CategoryListCreateView
+    CategoryListCreateView,
+    login_view,
+    dashboard_view
 )
 
 urlpatterns = [
     path('', home_view, name='home'),
+    path('login/', login_view, name='login'),
+    path('dashboard/', dashboard_view, name='dashboard'),
     path('auth/register/', RegisterView.as_view(), name='register'),
     path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

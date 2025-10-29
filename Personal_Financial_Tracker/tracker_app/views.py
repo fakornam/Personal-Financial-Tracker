@@ -1,8 +1,10 @@
+import requests
 from rest_framework import generics, permissions
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.shortcuts import redirect
 from .models import Transaction, Category
 from .serializers import (
     RegisterSerializer,
@@ -15,6 +17,38 @@ User = get_user_model()
 # Home page
 def home_view(request):
     return render(request, 'home.html')
+
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+
+        response = requests.post('http://127.0.0.1:8000/auth/login/', json={
+            'username': username,
+            'password': password
+        })
+
+        if response.status_code == 200:
+            token = response.json()['access']
+            request.session['access_token'] = token
+            return redirect('dashboard')
+        else:
+            return render(request, 'login_form.html', {'error': 'Invalid credentials'})
+
+    return render(request, 'login_form.html')
+
+
+def dashboard_view(request):
+    token = request.session.get('access_token')
+    if not token:
+        return redirect('login')
+
+    headers = {'Authorization': f'Bearer {token}'}
+    response = requests.get('http://127.0.0.1:8000/transactions/', headers=headers)
+
+    transactions = response.json() if response.status_code == 200 else []
+    return render(request, 'dashboard.html', {'transactions': transactions})
 
 # Register
 class RegisterView(generics.CreateAPIView):

@@ -1,0 +1,8 @@
+<h2>Your Transactions</h2>
+<ul>
+  {% for tx in transactions %}
+    <li>{{ tx.date }} - {{ tx.description }} - {{ tx.amount }}</li>
+  {% empty %}
+    <li>No transactions found.</li>
+  {% endfor %}
+</ul>
